@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * @author: zhk
- * @description: 解码器，将respond message转化为byteBuf
+ * @description: 编码器，将respond message转化为byteBuf
  * @date: 2023/6/22 20:12
  * @version: 1.0
  *
