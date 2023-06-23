@@ -1,4 +1,4 @@
-package io.netty.example.study.server.codec.server;
+package io.netty.example.study.server;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -6,6 +6,7 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.example.study.server.codec.Handler.OrderServerProcessHandler;
 import io.netty.example.study.server.codec.OrderFrameDecoder;
 import io.netty.example.study.server.codec.OrderFrameEncoder;
@@ -30,9 +31,9 @@ public class Server {
         serverBootstrap.handler(new LoggingHandler(LogLevel.INFO));
         serverBootstrap.group(new NioEventLoopGroup());
 
-        serverBootstrap.childHandler(new ChannelInitializer<NioServerSocketChannel>() {
+        serverBootstrap.childHandler(new ChannelInitializer<NioSocketChannel>() {
             @Override
-            protected void initChannel(NioServerSocketChannel ch) throws Exception {
+            protected void initChannel(NioSocketChannel ch) throws Exception {
                 ChannelPipeline pipeline = ch.pipeline();
                 pipeline.addLast(new OrderFrameDecoder());
                 pipeline.addLast(new OrderFrameEncoder());
