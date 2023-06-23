@@ -1,4 +1,4 @@
-package io.netty.example.study.server.codec.Handler;
+package io.netty.example.study.server.codec.handler;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -28,8 +28,12 @@ public class OrderServerProcessHandler extends SimpleChannelInboundHandler<Reque
         ResponseMessage responseMessage = new ResponseMessage();
         responseMessage.setMessageHeader(requestMessage.getMessageHeader());
         responseMessage.setMessageBody(operationResult);
-
+        /**
+         * bug：这里写出去的时responseMessage 而不是requestMessage
+         * 否则会出现client阻塞在 channelFuture.channel().closeFuture().get();
+         * 无法进行FLUSH以下的步骤 read message and READ COMPLETE
+         */
         //没有out参数了，所以需要自己写出去
-        ctx.writeAndFlush(requestMessage);
+        ctx.writeAndFlush(responseMessage);
     }
 }

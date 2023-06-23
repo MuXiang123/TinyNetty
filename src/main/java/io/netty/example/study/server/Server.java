@@ -7,7 +7,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.example.study.server.codec.Handler.OrderServerProcessHandler;
+import io.netty.example.study.server.codec.handler.OrderServerProcessHandler;
 import io.netty.example.study.server.codec.OrderFrameDecoder;
 import io.netty.example.study.server.codec.OrderFrameEncoder;
 import io.netty.example.study.server.codec.OrderProtocolDecoder;
@@ -35,8 +35,10 @@ public class Server {
             @Override
             protected void initChannel(NioSocketChannel ch) throws Exception {
                 ChannelPipeline pipeline = ch.pipeline();
+
                 pipeline.addLast(new OrderFrameDecoder());
                 pipeline.addLast(new OrderFrameEncoder());
+
                 pipeline.addLast(new OrderProtocolEncoder());
                 pipeline.addLast(new OrderProtocolDecoder());
 

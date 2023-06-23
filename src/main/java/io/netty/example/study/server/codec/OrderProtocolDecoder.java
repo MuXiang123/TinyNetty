@@ -17,13 +17,13 @@ import java.util.List;
 public class OrderProtocolDecoder extends MessageToMessageDecoder<ByteBuf> {
     /**
      * 将bytebuf转化为request msg
-     * @param channelHandlerContext
+     * @param ctx
      * @param byteBuf
      * @param out
      * @throws Exception
      */
     @Override
-    protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> out) throws Exception {
+    protected void decode(ChannelHandlerContext ctx, ByteBuf byteBuf, List<Object> out) throws Exception {
         RequestMessage requestMessage = new RequestMessage();
         requestMessage.decode(byteBuf);
 //        将msg传递出去
