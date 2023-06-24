@@ -5,6 +5,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioChannelOption;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.example.study.server.codec.handler.OrderServerProcessHandler;
@@ -30,6 +31,10 @@ public class Server {
 
         serverBootstrap.handler(new LoggingHandler(LogLevel.INFO));
         serverBootstrap.group(new NioEventLoopGroup());
+
+        //系统参数
+        serverBootstrap.childOption(NioChannelOption.SO_KEEPALIVE, true);
+        serverBootstrap.option(NioChannelOption.SO_BACKLOG, 1024);
 
         serverBootstrap.childHandler(new ChannelInitializer<NioSocketChannel>() {
             @Override

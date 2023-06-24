@@ -6,6 +6,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioChannelOption;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.example.study.client.codec.OrderFrameDecoder;
 import io.netty.example.study.client.codec.OrderFrameEncoder;
@@ -29,9 +30,10 @@ public class Client {
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.channel(NioSocketChannel.class);
-
+        //调整连接超时
+        bootstrap.option(NioChannelOption.CONNECT_TIMEOUT_MILLIS, 10 * 1000);
         bootstrap.group(new NioEventLoopGroup());
-
+        bootstrap.option(NioChannelOption.SO_REUSEADDR, true);
         //client不区分childHandler
         bootstrap.handler(new ChannelInitializer<NioSocketChannel>() {
             @Override
