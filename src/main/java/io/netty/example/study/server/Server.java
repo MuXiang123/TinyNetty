@@ -4,6 +4,7 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.DefaultEventLoop;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioChannelOption;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -15,6 +16,7 @@ import io.netty.example.study.server.codec.OrderProtocolDecoder;
 import io.netty.example.study.server.codec.OrderProtocolEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.util.concurrent.ExecutionException;
 
@@ -30,7 +32,10 @@ public class Server {
         serverBootstrap.channel(NioServerSocketChannel.class);
 
         serverBootstrap.handler(new LoggingHandler(LogLevel.INFO));
-        serverBootstrap.group(new NioEventLoopGroup());
+
+        NioEventLoopGroup boss = new NioEventLoopGroup(0, new DefaultThreadFactory("boss"));
+        NioEventLoopGroup worker = new NioEventLoopGroup(0, new DefaultThreadFactory("worker"));
+        serverBootstrap.group(boss, worker);
 
         //系统参数
         serverBootstrap.childOption(NioChannelOption.SO_KEEPALIVE, true);
