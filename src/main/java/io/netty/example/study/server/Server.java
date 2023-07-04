@@ -4,12 +4,12 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.DefaultEventLoop;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioChannelOption;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.example.study.server.codec.handler.OrderServerProcessHandler;
+import io.netty.example.study.server.handler.MetricHandler;
+import io.netty.example.study.server.handler.OrderServerProcessHandler;
 import io.netty.example.study.server.codec.OrderFrameDecoder;
 import io.netty.example.study.server.codec.OrderFrameEncoder;
 import io.netty.example.study.server.codec.OrderProtocolDecoder;
@@ -41,16 +41,19 @@ public class Server {
         serverBootstrap.childOption(NioChannelOption.SO_KEEPALIVE, true);
         serverBootstrap.option(NioChannelOption.SO_BACKLOG, 1024);
 
+        MetricHandler metricHandler = new MetricHandler();
         serverBootstrap.childHandler(new ChannelInitializer<NioSocketChannel>() {
             @Override
             protected void initChannel(NioSocketChannel ch) throws Exception {
                 ChannelPipeline pipeline = ch.pipeline();
-
-                pipeline.addLast(new OrderFrameDecoder());
+                pipeline.addLast(new LoggingHandler(LogLevel.INFO));
+                pipeline.addLast("frameDecoder", new OrderFrameDecoder());
                 pipeline.addLast(new OrderFrameEncoder());
 
                 pipeline.addLast(new OrderProtocolEncoder());
                 pipeline.addLast(new OrderProtocolDecoder());
+
+                pipeline.addLast("metricsHandler", metricHandler);
 
                 pipeline.addLast(new LoggingHandler(LogLevel.INFO));
 
