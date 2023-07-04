@@ -53,6 +53,11 @@ public class Client {
         channelFuture.sync();
         //构造消息，如果不想要每次都这样构造消息该怎么办？
         RequestMessage requestMessage = new RequestMessage(IdUtil.nextId(), new OrderOperation(1001, "tudou"));
+
+        //模拟内存泄漏，发送多次消息
+//        for (int i = 0; i < 10000; i++) {
+//            channelFuture.channel().writeAndFlush(requestMessage);
+//        }
         //发送消息
         channelFuture.channel().writeAndFlush(requestMessage);
 

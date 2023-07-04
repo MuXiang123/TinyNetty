@@ -1,5 +1,6 @@
 package io.netty.example.study.server.handler;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.example.study.common.Operation;
@@ -22,6 +23,9 @@ import io.netty.example.study.common.ResponseMessage;
 public class OrderServerProcessHandler extends SimpleChannelInboundHandler<RequestMessage> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RequestMessage requestMessage) throws Exception {
+        //模拟内存泄漏
+//        ByteBuf buffer = ctx.alloc().buffer();
+
         Operation operation = requestMessage.getMessageBody();
         OperationResult operationResult = operation.execute();
 
