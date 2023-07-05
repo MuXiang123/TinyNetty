@@ -14,6 +14,7 @@ public class AuthOperation extends Operation {
 
     /**
      * 简单授权的实现，简化业务实现
+     * 授权认证的判断方法
      * @return
      */
     @Override

@@ -15,6 +15,7 @@ import io.netty.example.study.client.codec.OrderProtocolEncoder;
 import io.netty.example.study.client.handler.dispatcher.ClientIdleCheckHandler;
 import io.netty.example.study.client.handler.dispatcher.KeepaliveHandler;
 import io.netty.example.study.common.RequestMessage;
+import io.netty.example.study.common.auth.AuthOperation;
 import io.netty.example.study.common.order.OrderOperation;
 import io.netty.example.study.util.IdUtil;
 import io.netty.handler.logging.LogLevel;
@@ -59,6 +60,11 @@ public class Client {
         ChannelFuture channelFuture = bootstrap.connect("127.0.0.1", 8090);
         //确保连接成功
         channelFuture.sync();
+
+        //提前发送授权消息
+        AuthOperation authOperation = new AuthOperation("admin", "password");
+        channelFuture.channel().writeAndFlush(new RequestMessage(IdUtil.nextId(), authOperation));
+
         //构造消息，如果不想要每次都这样构造消息该怎么办？
         RequestMessage requestMessage = new RequestMessage(IdUtil.nextId(), new OrderOperation(1001, "tudou"));
 

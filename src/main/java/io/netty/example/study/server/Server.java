@@ -8,6 +8,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioChannelOption;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.example.study.server.handler.AuthHandler;
 import io.netty.example.study.server.handler.MetricHandler;
 import io.netty.example.study.server.handler.OrderServerProcessHandler;
 import io.netty.example.study.server.codec.OrderFrameDecoder;
@@ -60,6 +61,7 @@ public class Server {
         RuleBasedIpFilter ruleBasedIpFilter = new RuleBasedIpFilter(ipSubnetFilterRule);
 
         MetricHandler metricHandler = new MetricHandler();
+        AuthHandler authHandler = new AuthHandler();
         serverBootstrap.childHandler(new ChannelInitializer<NioSocketChannel>() {
             @Override
             protected void initChannel(NioSocketChannel ch) throws Exception {
@@ -76,7 +78,8 @@ public class Server {
                 pipeline.addLast(new OrderProtocolDecoder());
 
                 pipeline.addLast("metricsHandler", metricHandler);
-
+                //authHandler必须放在OrderProtocolDecoder之后，
+                pipeline.addLast("auth", authHandler);
                 pipeline.addLast(new LoggingHandler(LogLevel.INFO));
 
                 pipeline.addLast(new OrderServerProcessHandler());
