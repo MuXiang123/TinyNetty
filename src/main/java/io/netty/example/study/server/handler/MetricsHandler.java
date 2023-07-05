@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 
 @ChannelHandler.Sharable
-public class MetricHandler extends ChannelDuplexHandler {
+public class MetricsHandler extends ChannelDuplexHandler {
     private AtomicLong totalConnectionNumber = new AtomicLong();
 
     {

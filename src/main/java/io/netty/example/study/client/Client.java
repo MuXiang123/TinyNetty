@@ -20,7 +20,11 @@ import io.netty.example.study.common.order.OrderOperation;
 import io.netty.example.study.util.IdUtil;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
+import javax.net.ssl.SSLException;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -30,51 +34,63 @@ import java.util.concurrent.ExecutionException;
  * @version: 1.0
  */
 public class Client {
-    public static void main(String[] args) throws InterruptedException, ExecutionException {
+    public static void main(String[] args) throws InterruptedException, ExecutionException, SSLException {
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.channel(NioSocketChannel.class);
         //调整连接超时
         bootstrap.option(NioChannelOption.CONNECT_TIMEOUT_MILLIS, 10 * 1000);
-        bootstrap.group(new NioEventLoopGroup());
         bootstrap.option(NioChannelOption.SO_REUSEADDR, true);
+        NioEventLoopGroup group = new NioEventLoopGroup();
+        try {
+            bootstrap.group(group);
+            KeepaliveHandler keepaliveHandler = new KeepaliveHandler();
+            LoggingHandler loggingHandler = new LoggingHandler(LogLevel.INFO);
+            SslContextBuilder sslContextBuilder = SslContextBuilder.forClient();
 
-        KeepaliveHandler keepaliveHandler = new KeepaliveHandler();
-        //client不区分childHandler
-        bootstrap.handler(new ChannelInitializer<NioSocketChannel>() {
-            @Override
-            protected void initChannel(NioSocketChannel ch) throws Exception {
-                ChannelPipeline pipeline = ch.pipeline();
+            //下面这行，先直接信任自签证书，以避免没有看到ssl那节课程的同学运行不了；
+            //学完ssl那节后，可以去掉下面这行代码，安装证书，安装方法参考课程，执行命令参考resources/ssl.txt里面
+            sslContextBuilder.trustManager(InsecureTrustManagerFactory.INSTANCE);
 
-                pipeline.addLast(new ClientIdleCheckHandler());
+            SslContext sslContext = sslContextBuilder.build();
+            //client不区分childHandler
+            bootstrap.handler(new ChannelInitializer<NioSocketChannel>() {
+                @Override
+                protected void initChannel(NioSocketChannel ch) throws Exception {
+                    ChannelPipeline pipeline = ch.pipeline();
 
-                pipeline.addLast(new OrderFrameDecoder());
-                pipeline.addLast(new OrderFrameEncoder());
-                pipeline.addLast(new OrderProtocolEncoder());
-                pipeline.addLast(new OrderProtocolDecoder());
+                    pipeline.addLast(new ClientIdleCheckHandler());
+                    pipeline.addLast(sslContext.newHandler(ch.alloc()));
 
-                pipeline.addLast(keepaliveHandler);
-                pipeline.addLast(new LoggingHandler(LogLevel.INFO));
-            }
-        });
+                    pipeline.addLast(new OrderFrameDecoder());
+                    pipeline.addLast(new OrderFrameEncoder());
+                    pipeline.addLast(new OrderProtocolEncoder());
+                    pipeline.addLast(new OrderProtocolDecoder());
 
-        ChannelFuture channelFuture = bootstrap.connect("127.0.0.1", 8090);
-        //确保连接成功
-        channelFuture.sync();
+                    pipeline.addLast(keepaliveHandler);
+                    pipeline.addLast(new LoggingHandler(LogLevel.INFO));
+                }
+            });
+            ChannelFuture channelFuture = bootstrap.connect("127.0.0.1", 8090);
+            //确保连接成功
+            channelFuture.sync();
 
-        //提前发送授权消息
-        AuthOperation authOperation = new AuthOperation("admin", "password");
-        channelFuture.channel().writeAndFlush(new RequestMessage(IdUtil.nextId(), authOperation));
+            //提前发送授权消息
+            AuthOperation authOperation = new AuthOperation("admin", "password");
+            channelFuture.channel().writeAndFlush(new RequestMessage(IdUtil.nextId(), authOperation));
 
-        //构造消息，如果不想要每次都这样构造消息该怎么办？
-        RequestMessage requestMessage = new RequestMessage(IdUtil.nextId(), new OrderOperation(1001, "tudou"));
+            //构造消息，如果不想要每次都这样构造消息该怎么办？
+            RequestMessage requestMessage = new RequestMessage(IdUtil.nextId(), new OrderOperation(1001, "tudou"));
 
-        //模拟内存泄漏，发送多次消息
+            //模拟内存泄漏，发送多次消息
 //        for (int i = 0; i < 10000; i++) {
 //            channelFuture.channel().writeAndFlush(requestMessage);
 //        }
-        //发送消息
-        channelFuture.channel().writeAndFlush(requestMessage);
+            //发送消息
+            channelFuture.channel().writeAndFlush(requestMessage);
 
-        channelFuture.channel().closeFuture().get();
+            channelFuture.channel().closeFuture().get();
+        }finally {
+            group.shutdownGracefully();
+        }
     }
 }

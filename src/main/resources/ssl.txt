@@ -1,10 +1,9 @@
 安装证书:
-
-keytool -import -alias netty -keystore  "C:\Program Files (x86)\Java\jdk1.8.0_191\jre\lib\security\cacerts"  -file "C:\Users\jiafu\AppData\Local\Temp\keyutil_example.com_3094218827613930787.crt" -storepass changeit
+keytool -import -alias netty -keystore  "C:\Program Files\Java\jre1.8.0_221\lib\security\cacerts"  -file "C:\Users\34721\AppData\Local\Temp\keyutil_example.com_9105082553259811034.crt" -storepass changeit
 
 删除证书:
 
-keytool -delete -alias netty -keystore "C:\Program Files (x86)\Java\jdk1.8.0_191\jre\lib\security\cacerts" -storepass changeit
+keytool -delete -alias netty -keystore "C:\Program Files\Java\jre1.8.0_221\lib\security\cacerts" -storepass changeit
 
 说明：
 1. "C:\Users\jiafu\AppData\Local\Temp\keyutil_example.com_3173065585205914170.crt" 需要替换，是自签证书位置，Server启动会打印出来。

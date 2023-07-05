@@ -14,8 +14,8 @@ import java.util.concurrent.TimeUnit;
  * @version: 1.0
  */
 @Slf4j
-public class ServeIdleCheckHandler extends IdleStateHandler {
-    public ServeIdleCheckHandler() {
+public class ServerIdleCheckHandler extends IdleStateHandler {
+    public ServerIdleCheckHandler() {
         super(10, 0 , 0, TimeUnit.SECONDS);
     }
 
