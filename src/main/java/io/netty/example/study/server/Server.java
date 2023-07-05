@@ -14,9 +14,15 @@ import io.netty.example.study.server.codec.OrderFrameDecoder;
 import io.netty.example.study.server.codec.OrderFrameEncoder;
 import io.netty.example.study.server.codec.OrderProtocolDecoder;
 import io.netty.example.study.server.codec.OrderProtocolEncoder;
+import io.netty.example.study.server.handler.ServeIdleCheckHandler;
+import io.netty.handler.ipfilter.IpFilterRuleType;
+import io.netty.handler.ipfilter.IpSubnetFilterRule;
+import io.netty.handler.ipfilter.RuleBasedIpFilter;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
+import io.netty.util.concurrent.UnorderedThreadPoolEventExecutor;
 
 import java.util.concurrent.ExecutionException;
 
@@ -41,13 +47,29 @@ public class Server {
         serverBootstrap.childOption(NioChannelOption.SO_KEEPALIVE, true);
         serverBootstrap.option(NioChannelOption.SO_BACKLOG, 1024);
 
+        NioEventLoopGroup eventLoopGroupForTrafficShaping =
+                new NioEventLoopGroup(0, new DefaultThreadFactory("TS"));
+        //trafficShaping
+        GlobalTrafficShapingHandler globalTrafficShapingHandler =
+                new GlobalTrafficShapingHandler(eventLoopGroupForTrafficShaping,
+                        10 * 1024 * 1024, 10 * 1024 * 1024);
+
+        //设置黑白名单
+        IpSubnetFilterRule ipSubnetFilterRule =
+                new IpSubnetFilterRule("127.0.0.1", 16, IpFilterRuleType.REJECT);
+        RuleBasedIpFilter ruleBasedIpFilter = new RuleBasedIpFilter(ipSubnetFilterRule);
+
         MetricHandler metricHandler = new MetricHandler();
         serverBootstrap.childHandler(new ChannelInitializer<NioSocketChannel>() {
             @Override
             protected void initChannel(NioSocketChannel ch) throws Exception {
                 ChannelPipeline pipeline = ch.pipeline();
                 pipeline.addLast(new LoggingHandler(LogLevel.INFO));
+                pipeline.addLast("ipFilter", ruleBasedIpFilter);
+                pipeline.addLast("TShandler", globalTrafficShapingHandler);
+                pipeline.addLast("idleCheck", new ServeIdleCheckHandler());
                 pipeline.addLast("frameDecoder", new OrderFrameDecoder());
+
                 pipeline.addLast(new OrderFrameEncoder());
 
                 pipeline.addLast(new OrderProtocolEncoder());

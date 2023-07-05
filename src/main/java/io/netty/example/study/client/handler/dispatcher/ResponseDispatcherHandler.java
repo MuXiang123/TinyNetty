@@ -1,4 +1,4 @@
-package io.netty.example.study.client.codec.dispatcher;
+package io.netty.example.study.client.handler.dispatcher;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
